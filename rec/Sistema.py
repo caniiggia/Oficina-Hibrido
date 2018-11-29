@@ -29,94 +29,125 @@ def recommend(username, users, fylter):
     recomendacoes = []
     neighborRatings = users[proximos]
     userRatings = users[username]
-    for turistico in neighborRatings:
-        if not turistico in userRatings:
-            if fylter != "NAO" and turistico in fylter:
-                recomendacoes.append((turistico, neighborRatings[turistico]))
-            elif fylter == "NAO":
-                recomendacoes.append((turistico, neighborRatings[turistico]))
+    for jogo in neighborRatings:
+        if not jogo in userRatings:
+            recomendacoes.append((jogo, neighborRatings[jogo]))
     return sorted(recomendacoes,
-                  key=lambda turisticoTuple: turisticoTuple[1],
+                  key=lambda jogoTuple: jogoTuple[1],
                   reverse = True)
+
 
 def Principal():
     cont = 0
     #Pega os dados no BD:
     users = usuario()
     #vai pegar os dados das categorias no BD:    
-    filtros = categoria()#usa com sabedoria felipe :)
+    tags = categoria()#usa com sabedoria felipe :)
+    lista_jogos = ["Red Dead Redemption",
+        "God of War",
+        "Far Cry 5",
+        "GTA 5",
+        "Spider-Man",
+        "League of Legends",
+        "The Sims 4",
+        "Battlefield V",
+        "FIFA 19",
+        "Overwatch",
+        "Counter-Strike: Global Offensive",
+        "Kingdom Hearts 3",
+        "A lenda do Herói",
+        "Relic Hunters",
+        "House Flipper",
+        "The Forest"]
     #parte dos inputs do usuario:
-    lugares = []
+    jogos = []
     notas = []
     pessoa= input("Digite seu nome:\n")
     print("\nPerfil: ", pessoa)
     print("------------------------------------------")
-    Menu_Lugares()
+    Menu_Jogos(lista_jogos)
+    print("Informa pelo menos 2 jogos.\n")
     while(True):
-        lugar = input("Digite seu lugar turístico " + str(cont+1) + ":\n")
-        nota = int(input("Digite uma nota (de 0 a 5) para " + lugar + ":\n"))
-        escolha = input("Deseja avaliar mais lugares?\n")
+        jogo = int(input("Digite o número do %d º jogo que deseja avaliar:\n" % (cont+1)))
+        nota = int(input("Digite uma nota (de 0 a 5) para " + lista_jogos[jogo-1] + ":\n"))
+        escolha = input("Deseja avaliar mais algum jogo?\n")
         escolha = escolha.upper()
-        lugares.append(lugar)
+        jogos.append(lista_jogos[jogo-1])
         notas.append(nota)
-        if(escolha=="NÃO" or escolha=="NAO"):
+        if((escolha=="NÃO" or escolha=="NAO")):
             print("------------------------------------------")
-            break
+            if(cont >= 1):
+                break
+            else:
+                print("Informe o segundo jogo!")
         print("------------------------------------------")
         cont+=1
-    while(True):
-        opcao = input("Deseja escolher alguma categoria?\n")
-        opcao = opcao.upper()
-        if(opcao == "SIM"):
-            Menu_Categorias()
-            name = input("Qual categoria procura?\n")
-            fylter = filtros[name]
-            break
-        elif(escolha=="NÃO" or escolha=="NAO"):
-            fylter = 'NAO'
-            break
-        else:
-            print("Por favor, informe sim ou não como resposta\n")
+    #while(True):
+    #    opcao = input("\nDeseja escolher alguma categoria?\n")
+    #    opcao = opcao.upper()
+    #    if(opcao == "SIM"):
+    #        Menu_Categorias(tags)
+    #        name = input("Qual categoria procura?\n")
+    #        fylter = tags[name]
+    #        break
+    #    elif(escolha=="NÃO" or escolha=="NAO"):
+    #        fylter = 'NAO'
+    #        break
+    #    else:
+    #        print("Por favor, informe sim ou não como resposta\n")
         
-    
-    Novo_Usuario=dict(zip(lugares,notas))
+    Novo_Usuario=dict(zip(jogos,notas))
     #adicionando informaçoes do usuario no BD:
-    users[pessoa]=Novo_Usuario
+    users[pessoa] = Novo_Usuario
     #chamamos a funçao recomendaçao e fazemos a recomendação ao usuario:
     print(computeNearestNeighbor(pessoa, users))
     Recomendacao = recommend(pessoa,users,fylter)
     return Recomendacao
 
-def Menu_Categorias():
-    print("Categorias Existentes:\
-          \n1-Bares\
-          \n2-Cultural\
-          \n3-Zoológicos\
-          \n4-Compras\
-          \n5-Esportivo\
-          \n6-Lazer\
-          \n7-Alimentação\n")
+def Menu_Categorias(tags):
+    print("Categorias disponíveis:")
+    cont = 0
+    for i in tags:
+        cont = cont + 1
+        print("%d - %s" %(cont,i))
+    print("\n")
 
-def Menu_Lugares():
-    print("Lugares Existentes:\
-          \n1-Teatro Amazonas\
-          \n2-Centro Cultural dos Povos da Amazônia\
-          \n3-Porão do Alemão\
-          \n4-Bar Axerito\
-          \n5-Bosque da Ciência\
-          \n6-CIGS\
-          \n7-Amazonas Shopping\
-          \n8-Mercado Municipal Adolpho Lisboa\
-          \n9-Arena da Amazonia\
-          \n10-Arena Paintball\
-          \n11-Shot in the Dark\
-          \n12-Praia da Ponta Negra\
-          \n13-Cachoeira Alto do Tarumã\
-          \n14-Praça da Saudade\
-          \n15-Parque Cidade da Criança\
-          \n16-Praça de Alimentação do Parque 10\
-          \n17-Praça de Alimentação do Parque das Laranjeiras\n")
+def Menu_Jogos(jogos):
+    print("Jogos disponíveis:")
+    for i in range(0,len(jogos)):
+        print("%d - %s" %(i+1,jogos[i]))
+    print("\n")
 
+def Recomendacao_historico(jogos,catego,recom):
+    jogos_ordena = sorted(jogos, key=lambda jogoTuple: jogoTuple[1],reverse = True)
+    most_games = []
+    games_weight = []
+    cont = 0
+    for jog in jogos_ordena:
+        for cat in catego:
+            if(Verifica_em(jog,cat)):
+                if(not cat in most_games):
+                    most_games.append(cat)
+                    games_weight.append(1);
+                else:
+                    games_weight[verifica_em_categoria(most_games,cat)] +=1
+        cont = cont + 1
+        if(cont = 5):
+            break
+    recom_pesos = []
+    for i in recom:
+        recom_pesos.append({
+
+def verifica_em_categoria(first,second):
+    for i in range(0,len(first):
+        if(second == first[i]):
+            return i
+
+def Verifica_em(user,categorias):
+    if user in cat):
+        return True
+    return False
+ 
 def Mostrar():
     #recupera e mostra a recomendaçao ao usuario
     Rec=Principal()
