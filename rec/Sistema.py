@@ -123,50 +123,58 @@ def Menu_Jogos(jogos):
     print("\n")
 
 def Recomendacao_historico(games,user_games,categories,recommendations):
-    jogos_ordena = sorted(user_games, key=lambda jogoTuple: jogoTuple[1],reverse = True)
     most_games = []
     games_weight = []
+    categories_pesos = []
+    final_recom = []
     cont = 0
-    for jog in jogos_ordena:
+    for i in range(len(user_games)):
         for cat in categories:
-            if(Verifica_em(jog,cat)):
-                if(not cat in most_games):
-                    most_games.append(cat)
-                    games_weight.append(1);
-                else:
-                    games_weight[verifica_em_categoria(most_games,cat)] +=1
+            for game in categories[cat]:
+                if user_games[i] == game:
+                    if(cat not in most_games):
+                        most_games.append(cat)
+                        games_weight.append(1)
+                    elif(cat in most_games):
+                        games_weight[verifica_em_categoria(most_games,cat)] += 1
         cont = cont + 1
         if(cont == 5):
             break
-    categories_pesos = dict(zip(most_games,games_weight))
+    for i in range(len(recommendations)):
+        categories_pesos.append((most_games[i],games_weight[i]))
     categories_pesos = sorted(categories_pesos, key=lambda jogoTuple: jogoTuple[1],reverse = True)
-    pesos = []
-    for i in recommendations:
-        pesos.append(0)
+    categories_pesos = dict(categories_pesos)
+    print(categories_pesos)
+    games_pesos = []
+    for i in range(len(recommendations)):
+        games_pesos.append(0)
 
-    games_pesos =+ dict(zip(recommendations,pesos))
-    print(games_pesos)
-    for recom in recommendations:
-        for cat in categories_pesos:
-            if(recom in cat):
-                if(cat in categories_pesos[0]):
-                    games_pesos[recom[0]] = games_pesos[recom[0]][1] + categories_pesos[cat]
-
-    return games_pesos
+    categories_pesos = dict(categories_pesos)
+    
+    for i in range(len(games_pesos)):
+        temp=0
+        for catego in categories_pesos:
+            if(recommendations[i][0] in categories[catego]):
+                games_pesos[i] = games_pesos[i] + categories_pesos[catego]
+        final_recom.append((recommendations[i][0],games_pesos[i]))
+    return sorted(final_recom, key=lambda jogoTuple: jogoTuple[1],reverse = True)
 
 def verifica_em_categoria(first,second):
     for i in range(0,len(first)):
         if(second == first[i]):
             return i
 
-def Verifica_em(user,categorias):
-    if user in categorias:
-        return True
+def Verifica_em(game,categorias):
+    for catego in categorias:
+        for games in catego:
+            if(games == game):
+                return True
     return False
  
 def Mostrar():
     #recupera e mostra a recomendaçao ao usuario
     Rec=Principal()
+    print("\n")
     print(Rec)
 
 Mostrar()
