@@ -23,7 +23,7 @@ def computeNearestNeighbor(username, users):
     return distances
 
 
-def recommend(username, users, fylter):
+def recommend(username, users):
     #aqui encontraremos os vizinhos proximos
     proximos = computeNearestNeighbor(username, users)[0][1]
     recomendacoes = []
@@ -101,8 +101,12 @@ def Principal():
     users[pessoa] = Novo_Usuario
     #chamamos a funçao recomendaçao e fazemos a recomendação ao usuario:
     print(computeNearestNeighbor(pessoa, users))
-    Recomendacao = recommend(pessoa,users,fylter)
-    return Recomendacao
+    print("\n")
+    Recomendacao = recommend(pessoa,users)
+    print(Recomendacao)
+    print("\n")
+    Recomendacao_conteudo = Recomendacao_historico(lista_jogos,jogos,tags,Recomendacao)
+    return Recomendacao_conteudo
 
 def Menu_Categorias(tags):
     print("Categorias disponíveis:")
@@ -118,13 +122,13 @@ def Menu_Jogos(jogos):
         print("%d - %s" %(i+1,jogos[i]))
     print("\n")
 
-def Recomendacao_historico(jogos,catego,recom):
-    jogos_ordena = sorted(jogos, key=lambda jogoTuple: jogoTuple[1],reverse = True)
+def Recomendacao_historico(games,user_games,categories,recommendations):
+    jogos_ordena = sorted(user_games, key=lambda jogoTuple: jogoTuple[1],reverse = True)
     most_games = []
     games_weight = []
     cont = 0
     for jog in jogos_ordena:
-        for cat in catego:
+        for cat in categories:
             if(Verifica_em(jog,cat)):
                 if(not cat in most_games):
                     most_games.append(cat)
@@ -132,19 +136,31 @@ def Recomendacao_historico(jogos,catego,recom):
                 else:
                     games_weight[verifica_em_categoria(most_games,cat)] +=1
         cont = cont + 1
-        if(cont = 5):
+        if(cont == 5):
             break
-    recom_pesos = []
-    for i in recom:
-        recom_pesos.append({
+    categories_pesos = dict(zip(most_games,games_weight))
+    categories_pesos = sorted(categories_pesos, key=lambda jogoTuple: jogoTuple[1],reverse = True)
+    pesos = []
+    for i in recommendations:
+        pesos.append(0)
+
+    games_pesos =+ dict(zip(recommendations,pesos))
+    print(games_pesos)
+    for recom in recommendations:
+        for cat in categories_pesos:
+            if(recom in cat):
+                if(cat in categories_pesos[0]):
+                    games_pesos[recom[0]] = games_pesos[recom[0]][1] + categories_pesos[cat]
+
+    return games_pesos
 
 def verifica_em_categoria(first,second):
-    for i in range(0,len(first):
+    for i in range(0,len(first)):
         if(second == first[i]):
             return i
 
 def Verifica_em(user,categorias):
-    if user in cat):
+    if user in categorias:
         return True
     return False
  
